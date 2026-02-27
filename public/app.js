@@ -3,6 +3,7 @@ const screens = {
   home: document.getElementById("screen-home"),
   lobby: document.getElementById("screen-lobby"),
   game: document.getElementById("screen-game"),
+  analytics: document.getElementById("screen-analytics"),
   results: document.getElementById("screen-results"),
 };
 
@@ -31,6 +32,17 @@ const els = {
   resultsContent: document.getElementById("results-content"),
   btnPlayAgain: document.getElementById("btn-play-again"),
   btnHome: document.getElementById("btn-home"),
+  btnAnalytics: document.getElementById("btn-analytics"),
+  btnAnalyticsBack: document.getElementById("btn-analytics-back"),
+  analyticsEmpty: document.getElementById("analytics-empty"),
+  analyticsContent: document.getElementById("analytics-content"),
+  statGames: document.getElementById("stat-games"),
+  statAvg: document.getElementById("stat-avg"),
+  statBest: document.getElementById("stat-best"),
+  statTotal: document.getElementById("stat-total"),
+  chartScores: document.getElementById("chart-scores"),
+  analyticsTip: document.getElementById("analytics-tip"),
+  btnMic: document.getElementById("btn-mic"),
 };
 
 // --- State ---
@@ -91,7 +103,7 @@ function updateTimerDisplay() {
   const secs = timeRemaining % 60;
   els.timer.textContent = `${mins}:${secs.toString().padStart(2, "0")}`;
 
-  const pct = (timeRemaining / 120) * 100;
+  const pct = (timeRemaining / 180) * 100;
   els.timerFill.style.width = pct + "%";
 
   els.timer.classList.remove("warning", "danger");
@@ -119,7 +131,7 @@ function startSoloGame() {
 
   showScreen("game");
   els.ideaInput.focus();
-  startTimer(120);
+  startTimer(180);
 }
 
 function addSoloIdea(idea) {
@@ -132,6 +144,7 @@ function addSoloIdea(idea) {
 }
 
 function endSoloGame() {
+  saveGameResult(els.gameObject.textContent, soloIdeas);
   els.resultsObject.textContent = els.gameObject.textContent;
 
   const card = document.createElement("div");
@@ -249,6 +262,10 @@ function connectSocket() {
 
   socket.on("game-ended", ({ object, results }) => {
     clearInterval(timerInterval);
+    // Save analytics for current player
+    const myName = els.playerName.value.trim();
+    const myResult = results.find((r) => r.name === myName);
+    if (myResult) saveGameResult(object, myResult.ideas);
     els.resultsObject.textContent = object;
 
     els.resultsContent.innerHTML = results
@@ -375,6 +392,238 @@ els.btnHome.addEventListener("click", () => {
 els.roomCodeInput.addEventListener("input", () => {
   els.roomCodeInput.value = els.roomCodeInput.value.toUpperCase();
 });
+
+// --- Analytics (localStorage) ---
+function saveGameResult(object, ideas) {
+  const history = JSON.parse(localStorage.getItem("ideation-history") || "[]");
+  history.push({
+    date: new Date().toISOString(),
+    object,
+    count: ideas.length,
+    ideas,
+  });
+  // Keep last 50 games
+  if (history.length > 50) history.splice(0, history.length - 50);
+  localStorage.setItem("ideation-history", JSON.stringify(history));
+}
+
+function showAnalytics() {
+  const history = JSON.parse(localStorage.getItem("ideation-history") || "[]");
+
+  if (history.length === 0) {
+    els.analyticsEmpty.classList.remove("hidden");
+    els.analyticsContent.classList.add("hidden");
+    showScreen("analytics");
+    return;
+  }
+
+  els.analyticsEmpty.classList.add("hidden");
+  els.analyticsContent.classList.remove("hidden");
+
+  const scores = history.map((h) => h.count);
+  const total = scores.reduce((a, b) => a + b, 0);
+  const avg = (total / scores.length).toFixed(1);
+  const best = Math.max(...scores);
+
+  els.statGames.textContent = scores.length;
+  els.statAvg.textContent = avg;
+  els.statBest.textContent = best;
+  els.statTotal.textContent = total;
+
+  drawChart(scores);
+
+  // Improvement tip
+  const tips = [
+    "Try thinking in categories: household, outdoor, artistic, scientific, silly.",
+    "Don't filter yourself — write down even the wildest ideas first.",
+    "Speed matters more than perfection. Edit later, brainstorm now.",
+    "Challenge yourself: can you beat your personal best next round?",
+    "Try combining two random ideas from your last game into one new concept.",
+    "Think about what a child, an engineer, or an alien would do with the object.",
+    "Set a mini-goal: try to hit 5 ideas in the first 30 seconds.",
+    "After each game, pick your 3 most original ideas and think about why they stood out.",
+  ];
+
+  if (scores.length >= 3) {
+    const recent = scores.slice(-3);
+    const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const olderAvg = scores.slice(0, -3).reduce((a, b) => a + b, 0) / Math.max(scores.slice(0, -3).length, 1);
+    if (recentAvg > olderAvg) {
+      els.analyticsTip.textContent = "You're improving! Your recent games are above your earlier average. " + tips[Math.floor(Math.random() * tips.length)];
+    } else {
+      els.analyticsTip.textContent = "Room to grow! " + tips[Math.floor(Math.random() * tips.length)];
+    }
+  } else {
+    els.analyticsTip.textContent = "Play a few more games to see your trend! " + tips[Math.floor(Math.random() * tips.length)];
+  }
+
+  showScreen("analytics");
+}
+
+function drawChart(scores) {
+  const canvas = els.chartScores;
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.parentElement.clientWidth;
+  const h = 200;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
+  ctx.scale(dpr, dpr);
+
+  ctx.clearRect(0, 0, w, h);
+
+  const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+  const chartW = w - padding.left - padding.right;
+  const chartH = h - padding.top - padding.bottom;
+  const maxScore = Math.max(...scores, 1);
+  const n = scores.length;
+
+  // Grid lines
+  ctx.strokeStyle = "#333355";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = padding.top + (chartH / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(w - padding.right, y);
+    ctx.stroke();
+
+    ctx.fillStyle = "#8888aa";
+    ctx.font = "11px sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(Math.round(maxScore - (maxScore / 4) * i), padding.left - 8, y + 4);
+  }
+
+  if (n === 1) {
+    // Single dot
+    const x = padding.left + chartW / 2;
+    const y = padding.top + chartH - (scores[0] / maxScore) * chartH;
+    ctx.fillStyle = "#6c63ff";
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#8888aa";
+    ctx.font = "11px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("1", x, h - 8);
+    return;
+  }
+
+  const step = chartW / (n - 1);
+
+  // Area fill
+  ctx.beginPath();
+  ctx.moveTo(padding.left, padding.top + chartH);
+  for (let i = 0; i < n; i++) {
+    const x = padding.left + step * i;
+    const y = padding.top + chartH - (scores[i] / maxScore) * chartH;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(padding.left + step * (n - 1), padding.top + chartH);
+  ctx.closePath();
+  const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartH);
+  gradient.addColorStop(0, "rgba(108, 99, 255, 0.3)");
+  gradient.addColorStop(1, "rgba(108, 99, 255, 0.02)");
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = "#6c63ff";
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = "round";
+  for (let i = 0; i < n; i++) {
+    const x = padding.left + step * i;
+    const y = padding.top + chartH - (scores[i] / maxScore) * chartH;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Dots
+  for (let i = 0; i < n; i++) {
+    const x = padding.left + step * i;
+    const y = padding.top + chartH - (scores[i] / maxScore) * chartH;
+    ctx.fillStyle = "#6c63ff";
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#0f0f1a";
+    ctx.beginPath();
+    ctx.arc(x, y, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // X-axis labels (show a few)
+  ctx.fillStyle = "#8888aa";
+  ctx.font = "11px sans-serif";
+  ctx.textAlign = "center";
+  const labelStep = Math.max(1, Math.floor(n / 8));
+  for (let i = 0; i < n; i += labelStep) {
+    const x = padding.left + step * i;
+    ctx.fillText(i + 1, x, h - 8);
+  }
+  if ((n - 1) % labelStep !== 0) {
+    const x = padding.left + step * (n - 1);
+    ctx.fillText(n, x, h - 8);
+  }
+}
+
+els.btnAnalytics.addEventListener("click", showAnalytics);
+els.btnAnalyticsBack.addEventListener("click", () => showScreen("home"));
+
+// --- Speech Recognition ---
+let recognition = null;
+let isListening = false;
+
+function setupSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    els.btnMic.classList.add("hidden");
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.lang = "en-US";
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript.trim();
+    if (transcript) {
+      els.ideaInput.value = transcript;
+      submitIdea();
+    }
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    els.btnMic.classList.remove("mic-active");
+  };
+
+  recognition.onerror = () => {
+    isListening = false;
+    els.btnMic.classList.remove("mic-active");
+  };
+}
+
+els.btnMic.addEventListener("click", () => {
+  if (!recognition) return;
+  if (isListening) {
+    recognition.stop();
+    isListening = false;
+    els.btnMic.classList.remove("mic-active");
+  } else {
+    recognition.start();
+    isListening = true;
+    els.btnMic.classList.add("mic-active");
+  }
+});
+
+setupSpeechRecognition();
 
 // --- Utility ---
 function escapeHtml(str) {

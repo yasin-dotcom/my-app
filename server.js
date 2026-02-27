@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // In-memory rooms store
 const rooms = new Map();
 
-const ROUND_DURATION = 120; // 2 minutes in seconds
+const ROUND_DURATION = 180; // 3 minutes in seconds
 
 function generateRoomCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
