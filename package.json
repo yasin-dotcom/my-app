@@ -1,0 +1,14 @@
+{
+  "name": "ideation-sprint",
+  "version": "1.0.0",
+  "description": "A creativity training game — generate as many ideas as you can in 2 minutes. Play solo or compete online!",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  }
+}

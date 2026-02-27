@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ideation Sprint</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- HOME SCREEN -->
+    <div id="screen-home" class="screen active">
+      <div class="container">
+        <h1 class="logo">Ideation<span>Sprint</span></h1>
+        <p class="tagline">How creative can you get in 2 minutes?</p>
+
+        <div class="name-input-group">
+          <label for="player-name">Your Name</label>
+          <input type="text" id="player-name" placeholder="Enter your name" maxlength="20" autocomplete="off">
+        </div>
+
+        <div class="home-buttons">
+          <button id="btn-solo" class="btn btn-primary btn-large">Solo Practice</button>
+          <div class="divider"><span>or play online</span></div>
+          <button id="btn-create" class="btn btn-accent btn-large">Create Room</button>
+          <div class="join-row">
+            <input type="text" id="room-code-input" placeholder="Room code" maxlength="4" autocomplete="off">
+            <button id="btn-join" class="btn btn-secondary">Join</button>
+          </div>
+        </div>
+
+        <div id="home-error" class="error-msg hidden"></div>
+      </div>
+    </div>
+
+    <!-- LOBBY SCREEN -->
+    <div id="screen-lobby" class="screen">
+      <div class="container">
+        <h2>Room: <span id="lobby-room-code" class="room-code"></span></h2>
+        <p class="lobby-hint">Share this code with friends to join!</p>
+        <div id="lobby-players" class="player-list"></div>
+        <button id="btn-start-game" class="btn btn-primary btn-large hidden">Start Game</button>
+        <p id="lobby-waiting" class="lobby-hint">Waiting for host to start...</p>
+        <button id="btn-leave" class="btn btn-ghost">Leave Room</button>
+      </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="screen-game" class="screen">
+      <div class="container game-layout">
+        <div class="game-header">
+          <div class="prompt-section">
+            <p class="prompt-label">Your object:</p>
+            <h2 id="game-object" class="prompt-object"></h2>
+            <p class="prompt-instruction">Type as many creative uses as you can!</p>
+          </div>
+          <div class="timer-section">
+            <div id="timer" class="timer">2:00</div>
+            <div id="timer-bar" class="timer-bar">
+              <div id="timer-fill" class="timer-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-section">
+          <div class="idea-input-row">
+            <input type="text" id="idea-input" placeholder="Type an idea and press Enter..." maxlength="200" autocomplete="off">
+            <button id="btn-submit-idea" class="btn btn-primary">Add</button>
+          </div>
+          <div class="idea-count">Ideas: <span id="idea-count-num">0</span></div>
+        </div>
+
+        <div class="game-body">
+          <div class="ideas-column">
+            <h3>Your Ideas</h3>
+            <ol id="ideas-list" class="ideas-list"></ol>
+          </div>
+          <div id="scoreboard-column" class="scoreboard-column hidden">
+            <h3>Live Scores</h3>
+            <div id="live-scores" class="live-scores"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS SCREEN -->
+    <div id="screen-results" class="screen">
+      <div class="container">
+        <h2 class="results-title">Time's Up!</h2>
+        <p class="results-object">Object: <strong id="results-object"></strong></p>
+        <div id="results-content" class="results-content"></div>
+        <div class="results-buttons">
+          <button id="btn-play-again" class="btn btn-primary btn-large">Play Again</button>
+          <button id="btn-home" class="btn btn-ghost">Back to Home</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
