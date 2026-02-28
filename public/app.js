@@ -44,9 +44,7 @@ const els = {
   analyticsTip: document.getElementById("analytics-tip"),
   btnMic: document.getElementById("btn-mic"),
   btnCopyCode: document.getElementById("btn-copy-code"),
-  btnHint: document.getElementById("btn-hint"),
-  hintBubble: document.getElementById("hint-bubble"),
-  hintText: document.getElementById("hint-text"),
+  resultsSuggestions: document.getElementById("results-suggestions"),
 };
 
 // --- State ---
@@ -123,19 +121,12 @@ function updateTimerDisplay() {
 }
 
 // --- Solo Mode ---
-function resetHints() {
-  shuffleHints();
-  els.hintBubble.classList.add("hidden");
-  els.btnHint.textContent = "Stuck? Get a suggestion";
-}
-
 function startSoloGame() {
   gameMode = "solo";
   soloIdeas = [];
   els.ideasList.innerHTML = "";
   els.ideaCountNum.textContent = "0";
   els.scoreboardColumn.classList.add("hidden");
-  resetHints();
 
   const object = soloObjects[Math.floor(Math.random() * soloObjects.length)];
   els.gameObject.textContent = object;
@@ -175,6 +166,7 @@ function endSoloGame() {
   els.resultsContent.appendChild(card);
 
   els.btnPlayAgain.classList.remove("hidden");
+  showSuggestions(els.gameObject.textContent, soloIdeas);
   showScreen("results");
   showConfetti();
 }
@@ -250,7 +242,6 @@ function connectSocket() {
     els.scoreboardColumn.classList.remove("hidden");
     els.liveScores.innerHTML = "";
     els.gameObject.textContent = object;
-    resetHints();
 
     showScreen("game");
     els.ideaInput.focus();
@@ -307,6 +298,8 @@ function connectSocket() {
       els.btnPlayAgain.classList.add("hidden");
     }
 
+    const allIdeas = results.flatMap((r) => r.ideas);
+    showSuggestions(object, allIdeas);
     showScreen("results");
     showConfetti();
   });
@@ -323,59 +316,52 @@ function connectSocket() {
   });
 }
 
-// --- Hints / Suggestions ---
-const hintTemplates = [
-  "What if you used [object] as a doorstop?",
-  "Could [object] work as a piece of art or decoration?",
-  "Imagine [object] as a musical instrument — how would you play it?",
-  "What if you had 1,000 of them? What could you build?",
-  "How would a kid use [object] as a toy?",
-  "Could [object] be used as a weapon in a zombie apocalypse?",
-  "What if [object] were 10x bigger? What new uses would that unlock?",
-  "Think kitchen: could [object] help with cooking or serving?",
-  "Could you use [object] in a garden or for plants?",
-  "What if you wore [object] as fashion or jewelry?",
-  "How could [object] help you exercise or work out?",
-  "Imagine [object] in an office — what problem could it solve?",
-  "Could [object] be part of a game or sport?",
-  "What if you combined [object] with tape or glue?",
-  "Think about emergencies — could [object] help in a survival situation?",
-  "Could [object] be used to send a message or communicate?",
-  "What if you used [object] to prop something up or hold something open?",
-  "How could [object] be used in a science experiment?",
-  "Think about pets — could an animal use [object]?",
-  "What if [object] were tiny, like 1 inch? New uses?",
-  "Could [object] help organize or store other things?",
-  "Think about parties — could [object] be a party prop or game piece?",
-  "What if you attached [object] to a wall? What purpose could it serve?",
-  "Could you use [object] as a container or vessel?",
-  "How could [object] make a good gift or souvenir?",
-  "Think transportation — could [object] help you move something?",
-  "What if you threw [object]? Could that be useful somehow?",
-  "Could [object] be used to make noise or attract attention?",
-  "How would a teacher use [object] in a classroom?",
-  "What if [object] were made of rubber? Or metal? New ideas?",
+// --- Post-Game Suggestions ---
+const suggestions = [
+  "Use it as a doorstop or wedge",
+  "Turn it into a piece of art or wall decoration",
+  "Use it as a musical instrument or noisemaker",
+  "Stack or connect many of them to build a structure",
+  "Give it to a kid as an improvised toy",
+  "Use it as a self-defense tool in a zombie apocalypse",
+  "Scale it up 10x and use it as furniture",
+  "Repurpose it as a kitchen utensil or serving tool",
+  "Use it in the garden as a plant marker or support",
+  "Wear it as fashion, jewelry, or a costume piece",
+  "Incorporate it into a workout or exercise routine",
+  "Use it to solve an office or desk organization problem",
+  "Make it part of a new game or sport",
+  "Combine it with tape or glue to invent something new",
+  "Use it in a survival or emergency situation",
+  "Turn it into a way to send a message or signal",
+  "Prop something up or hold something open with it",
+  "Use it in a science experiment or classroom demo",
+  "Give it to a pet as a toy or enrichment",
+  "Shrink it down and use it as a miniature tool or accessory",
+  "Use it to organize or store small items",
+  "Make it a party prop, decoration, or game piece",
+  "Mount it on a wall for a functional or decorative purpose",
+  "Hollow it out and use it as a container",
+  "Wrap it up as a creative or gag gift",
+  "Use it to transport or move something heavy",
+  "Throw it as part of a game or competition",
+  "Use it to attract attention or mark a location",
+  "Use it as a teaching aid in a classroom",
+  "Imagine it in a different material — rubber, metal, glass — for new uses",
 ];
 
-let hintIndex = 0;
-let shuffledHints = [];
+function showSuggestions(object, playerIdeas) {
+  const playerIdeasLower = playerIdeas.map((i) => i.toLowerCase());
+  const shuffled = [...suggestions].sort(() => Math.random() - 0.5);
+  const picked = shuffled.slice(0, 8);
 
-function shuffleHints() {
-  shuffledHints = [...hintTemplates].sort(() => Math.random() - 0.5);
-  hintIndex = 0;
-}
-
-function showHint() {
-  if (shuffledHints.length === 0) shuffleHints();
-  if (hintIndex >= shuffledHints.length) shuffleHints();
-
-  const object = els.gameObject.textContent;
-  const hint = shuffledHints[hintIndex].replace(/\[object\]/g, object);
-  hintIndex++;
-
-  els.hintText.textContent = hint;
-  els.hintBubble.classList.remove("hidden");
-  els.btnHint.textContent = "Next suggestion";
+  const html = `
+    <h3 class="suggestions-title">Other uses for ${escapeHtml(object)} you could try</h3>
+    <div class="suggestions-list">
+      ${picked.map((s) => `<div class="suggestion-tag">${escapeHtml(s)}</div>`).join("")}
+    </div>
+  `;
+  els.resultsSuggestions.innerHTML = html;
 }
 
 // --- Event Listeners ---
@@ -430,9 +416,6 @@ els.btnLeave.addEventListener("click", () => {
   isHost = false;
   showScreen("home");
 });
-
-// Hint button
-els.btnHint.addEventListener("click", showHint);
 
 // Submit idea
 els.btnSubmitIdea.addEventListener("click", submitIdea);
