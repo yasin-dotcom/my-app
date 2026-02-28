@@ -353,12 +353,11 @@ const suggestions = [
 function showSuggestions(object, playerIdeas) {
   const playerIdeasLower = playerIdeas.map((i) => i.toLowerCase());
   const shuffled = [...suggestions].sort(() => Math.random() - 0.5);
-  const picked = shuffled.slice(0, 8);
 
   const html = `
     <h3 class="suggestions-title">Other uses for ${escapeHtml(object)} you could try</h3>
     <div class="suggestions-list">
-      ${picked.map((s) => `<div class="suggestion-tag">${escapeHtml(s)}</div>`).join("")}
+      ${shuffled.map((s) => `<div class="suggestion-tag">${escapeHtml(s)}</div>`).join("")}
     </div>
   `;
   els.resultsSuggestions.innerHTML = html;
