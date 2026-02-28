@@ -43,6 +43,7 @@ const els = {
   chartScores: document.getElementById("chart-scores"),
   analyticsTip: document.getElementById("analytics-tip"),
   btnMic: document.getElementById("btn-mic"),
+  btnCopyCode: document.getElementById("btn-copy-code"),
 };
 
 // --- State ---
@@ -165,6 +166,7 @@ function endSoloGame() {
 
   els.btnPlayAgain.classList.remove("hidden");
   showScreen("results");
+  showConfetti();
 }
 
 // --- Idea Submission ---
@@ -219,12 +221,16 @@ function connectSocket() {
       .join("");
   });
 
-  socket.on("new-host", (hostName) => {
-    // Check if we are the new host by comparing names
-    // (server already reassigned the host)
-    isHost = true;
-    els.btnStartGame.classList.remove("hidden");
-    els.lobbyWaiting.classList.add("hidden");
+  socket.on("new-host", ({ name, hostId }) => {
+    // Only the actual new host gets host controls
+    isHost = socket.id === hostId;
+    if (isHost) {
+      els.btnStartGame.classList.remove("hidden");
+      els.lobbyWaiting.classList.add("hidden");
+    } else {
+      els.btnStartGame.classList.add("hidden");
+      els.lobbyWaiting.classList.remove("hidden");
+    }
   });
 
   socket.on("game-started", ({ object, duration }) => {
@@ -291,6 +297,7 @@ function connectSocket() {
     }
 
     showScreen("results");
+    showConfetti();
   });
 
   socket.on("back-to-lobby", () => {
@@ -386,6 +393,15 @@ els.btnHome.addEventListener("click", () => {
   gameMode = null;
   isHost = false;
   showScreen("home");
+});
+
+// Copy room code
+els.btnCopyCode.addEventListener("click", () => {
+  const code = els.lobbyRoomCode.textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    els.btnCopyCode.classList.add("copied");
+    setTimeout(() => els.btnCopyCode.classList.remove("copied"), 1500);
+  });
 });
 
 // Room code input — auto-uppercase
@@ -624,6 +640,25 @@ els.btnMic.addEventListener("click", () => {
 });
 
 setupSpeechRecognition();
+
+// --- Confetti ---
+function showConfetti() {
+  const container = document.getElementById("confetti-container");
+  container.innerHTML = "";
+  const colors = ["#6c63ff", "#ff6b6b", "#2ecc71", "#f39c12", "#e8e8f0"];
+  for (let i = 0; i < 60; i++) {
+    const piece = document.createElement("div");
+    piece.className = "confetti-piece";
+    piece.style.left = Math.random() * 100 + "%";
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = Math.random() * 1.5 + "s";
+    piece.style.width = (Math.random() * 8 + 5) + "px";
+    piece.style.height = (Math.random() * 8 + 5) + "px";
+    piece.style.borderRadius = Math.random() > 0.5 ? "50%" : "0";
+    container.appendChild(piece);
+  }
+  setTimeout(() => { container.innerHTML = ""; }, 4500);
+}
 
 // --- Utility ---
 function escapeHtml(str) {

@@ -172,7 +172,7 @@ io.on("connection", (socket) => {
     if (room.host === socket.id) {
       room.host = room.players.keys().next().value;
       const newHost = room.players.get(room.host);
-      io.to(currentRoom).emit("new-host", newHost.name);
+      io.to(currentRoom).emit("new-host", { name: newHost.name, hostId: room.host });
     }
 
     broadcastRoomState(currentRoom);

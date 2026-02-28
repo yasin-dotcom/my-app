@@ -1,12 +1,12 @@
 # Ideation Sprint
 
-A creativity training game — generate as many creative uses for a random object as you can in 2 minutes!
+A creativity training game — generate as many creative uses for a random object as you can in 3 minutes!
 
 ## How to Play
 
 1. You're given a **random everyday object** (e.g. "paperclip", "brick")
-2. A **2-minute timer** starts
-3. Type as many creative uses for that object as you can
+2. A **3-minute timer** starts
+3. Type as many creative uses for that object as you can (or use voice input!)
 4. Your total ideas are tallied at the end
 
 ## Game Modes

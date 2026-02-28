@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ideation Sprint</title>
+  <title>Ideation Sprint — Creativity Game</title>
+  <meta name="description" content="Generate as many creative uses for a random object as you can in 3 minutes. Play solo or compete online with friends!">
+  <meta property="og:title" content="Ideation Sprint">
+  <meta property="og:description" content="A fast-paced creativity game. How many uses can you think of for a paperclip in 3 minutes?">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#6c63ff">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -70,7 +76,11 @@
     <!-- LOBBY SCREEN -->
     <div id="screen-lobby" class="screen">
       <div class="container">
-        <h2>Room: <span id="lobby-room-code" class="room-code"></span></h2>
+        <h2>Room: <span id="lobby-room-code" class="room-code"></span>
+          <button id="btn-copy-code" class="btn btn-ghost btn-copy" title="Copy room code">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </h2>
         <p class="lobby-hint">Share this code with friends to join!</p>
         <div id="lobby-players" class="player-list"></div>
         <button id="btn-start-game" class="btn btn-primary btn-large hidden">Start Game</button>
@@ -166,6 +176,7 @@
 
     <!-- RESULTS SCREEN -->
     <div id="screen-results" class="screen">
+      <div id="confetti-container" class="confetti-container"></div>
       <div class="container">
         <h2 class="results-title">Time's Up!</h2>
         <p class="results-object">Object: <strong id="results-object"></strong></p>
