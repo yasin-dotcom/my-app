@@ -411,6 +411,34 @@ label {
   font-size: 1rem;
 }
 
+/* Hints */
+.hints-section {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.btn-hint {
+  font-size: 0.9rem;
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.btn-hint:hover {
+  color: var(--text);
+}
+
+.hint-bubble {
+  background: rgba(108, 99, 255, 0.1);
+  border: 1px solid rgba(108, 99, 255, 0.25);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  animation: slideIn 0.2s ease-out;
+}
+
 /* Game body */
 .game-body {
   display: flex;
