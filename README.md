@@ -29,6 +29,20 @@ cp .env.example .env
 
 ## Usage
 
+### Web App (Easiest)
+
+```bash
+streamlit run app.py
+```
+
+This opens a browser UI where you can:
+- Paste Reel URLs and click "Analyze"
+- Search hashtags with one click
+- Enter a creator's username to analyze their reels
+- Download the report as Markdown or JSON
+
+### CLI
+
 ### Analyze specific Reel URLs
 ```bash
 python -m instagram_viral_scraper analyze-urls \
