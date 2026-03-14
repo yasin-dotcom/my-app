@@ -143,14 +143,18 @@ def _generate_report(results: list[VideoAnalysis], config: Config, output_path: 
 
     # Print summary table
     table = Table(title="Analyzed Videos")
+    table.add_column("#", style="dim", justify="right")
     table.add_column("Username", style="cyan")
+    table.add_column("URL", style="blue underline")
     table.add_column("Views", justify="right")
     table.add_column("Likes", justify="right")
     table.add_column("Has Transcript", justify="center")
 
-    for r in results:
+    for i, r in enumerate(results, 1):
         table.add_row(
+            str(i),
             f"@{r.video.username}",
+            r.video.url,
             f"{r.video.views:,}",
             f"{r.video.likes:,}",
             "Yes" if r.transcript else "No",
@@ -168,7 +172,11 @@ def _generate_report(results: list[VideoAnalysis], config: Config, output_path: 
     report = f"# Viral Book Marketing Report\n\n"
     report += f"*Generated: {timestamp}*\n"
     report += f"*Videos analyzed: {len(results)}*\n\n"
-    report += "---\n\n"
+    report += "## Source Videos\n\n"
+    for i, r in enumerate(results, 1):
+        label = f"@{r.video.username}" if r.video.username else "unknown"
+        report += f"{i}. [{label} — {r.video.views:,} views]({r.video.url})\n"
+    report += "\n---\n\n"
     report += "## Viral Playbook\n\n"
     report += playbook + "\n\n"
     report += "---\n\n"
@@ -176,7 +184,7 @@ def _generate_report(results: list[VideoAnalysis], config: Config, output_path: 
 
     for i, r in enumerate(results, 1):
         report += f"### Video {i}: @{r.video.username}\n\n"
-        report += f"- **URL:** {r.video.url}\n"
+        report += f"- **URL:** [{r.video.url}]({r.video.url})\n"
         report += f"- **Views:** {r.video.views:,} | **Likes:** {r.video.likes:,} | **Comments:** {r.video.comments:,}\n"
         if r.video.caption:
             report += f"- **Caption:** {r.video.caption[:200]}...\n"
