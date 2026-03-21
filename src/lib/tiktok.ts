@@ -181,8 +181,8 @@ export async function searchTikTokVideos(
     );
   }
 
-  // Sort by views descending
+  // Sort by views descending and limit to top 10
   videos.sort((a, b) => b.views - a.views);
 
-  return videos;
+  return videos.slice(0, 10);
 }
