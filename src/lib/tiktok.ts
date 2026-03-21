@@ -75,8 +75,7 @@ export async function searchTikTokVideos(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       searchQueries: [searchTerm],
-      maxProfilesPerQuery: 1,
-      resultsPerPage: Math.max(maxResults, 200),
+      resultsPerPage: 50,
       shouldDownloadCovers: false,
       shouldDownloadVideos: false,
     }),
