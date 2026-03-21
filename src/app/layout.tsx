@@ -3,9 +3,9 @@ import { Header } from "@/components/Header";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ReelScanner - Instagram Viral Content Analyzer",
+  title: "ReelScanner - TikTok Viral Content Analyzer",
   description:
-    "Search Instagram for viral content, pull transcripts, and visually analyze what's getting views.",
+    "Search TikTok for viral content, pull transcripts, and visually analyze what's getting views.",
 };
 
 export default function RootLayout({

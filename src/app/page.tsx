@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 
-interface ReelResult {
+interface VideoResult {
   id: number;
-  instagram_id: string;
-  instagram_url: string;
+  tiktok_id: string;
+  url: string;
   creator_handle: string;
+  creator_name: string;
   caption: string;
   views: number;
   likes: number;
   comments_count: number;
+  shares: number;
+  saves: number;
   duration_seconds: number;
   thumbnail_url: string;
   posted_at: string;
@@ -20,9 +23,10 @@ export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [minViews, setMinViews] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [results, setResults] = useState<ReelResult[]>([]);
+  const [results, setResults] = useState<VideoResult[]>([]);
   const [searched, setSearched] = useState(false);
 
   async function handleSearch(e: React.FormEvent) {
@@ -32,6 +36,7 @@ export default function SearchPage() {
     setLoading(true);
     setError("");
     setResults([]);
+    setSearched(false);
 
     try {
       const res = await fetch("/api/search", {
@@ -41,6 +46,7 @@ export default function SearchPage() {
           query: query.trim(),
           dateFrom: dateFrom || undefined,
           dateTo: dateTo || undefined,
+          minViews: minViews ? parseInt(minViews) : undefined,
         }),
       });
 
@@ -67,10 +73,10 @@ export default function SearchPage() {
       {/* Search Form */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          <span className="gradient-text">Scan Instagram</span> for Viral Content
+          <span className="gradient-text">Scan TikTok</span> for Viral Content
         </h1>
         <p className="text-gray-400 mb-6">
-          Search by hashtag or keyword, filter by date, and analyze what&apos;s getting views.
+          Search by keyword or hashtag, filter by views and date, then analyze what&apos;s getting traction.
         </p>
 
         <form onSubmit={handleSearch} className="glass-card rounded-2xl p-6 space-y-4">
@@ -84,11 +90,27 @@ export default function SearchPage() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="e.g. businesscoach, fitnesstips, realestate"
+                placeholder="e.g. dropshipping, skincare routine, fitness"
                 required
                 className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
               />
             </div>
+            <div>
+              <label htmlFor="minViews" className="block text-sm font-medium mb-2">
+                Min Views
+              </label>
+              <input
+                id="minViews"
+                type="number"
+                value={minViews}
+                onChange={(e) => setMinViews(e.target.value)}
+                placeholder="e.g. 100000"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-4">
             <div>
               <label htmlFor="dateFrom" className="block text-sm font-medium mb-2">
                 From
@@ -116,7 +138,7 @@ export default function SearchPage() {
           </div>
 
           {error && (
-            <div className="text-red-400 text-sm bg-red-500/10 px-4 py-3 rounded-xl">
+            <div className="text-red-400 text-sm bg-red-500/10 px-4 py-3 rounded-xl whitespace-pre-wrap">
               {error}
             </div>
           )}
@@ -126,42 +148,44 @@ export default function SearchPage() {
             disabled={loading}
             className="bg-gradient-to-r from-violet-500 to-pink-500 text-white px-8 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {loading ? "Scanning Instagram..." : "Search"}
+            {loading ? "Scanning TikTok..." : "Search"}
           </button>
         </form>
       </div>
 
-      {/* Results */}
+      {/* Loading */}
       {loading && (
         <div className="text-center py-16">
           <div className="inline-block w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mb-4" />
-          <p className="text-gray-400">Searching Instagram via Apify... this can take up to 2 minutes.</p>
+          <p className="text-gray-400">Searching TikTok via Apify... this can take up to 3 minutes.</p>
         </div>
       )}
 
-      {!loading && searched && results.length === 0 && (
+      {/* No results */}
+      {!loading && searched && results.length === 0 && !error && (
         <div className="text-center py-16 text-gray-400">
-          No reels found for &quot;{query}&quot;. Try a different search term.
+          No videos found matching your filters. Try lowering the min views or broadening the date range.
         </div>
       )}
 
+      {/* Results grid */}
       {results.length > 0 && (
         <div>
           <h2 className="text-xl font-semibold mb-4">
-            {results.length} Reels Found
+            {results.length} Videos Found
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {results.map((reel) => (
+            {results.map((video) => (
               <a
-                key={reel.id}
-                href={`/reel/${reel.id}`}
+                key={video.id}
+                href={`/reel/${video.id}`}
                 className="glass-card rounded-xl p-5 block transition-all hover:scale-[1.02]"
               >
-                {reel.thumbnail_url && (
+                {video.thumbnail_url && (
                   <div className="w-full h-48 rounded-lg mb-4 overflow-hidden bg-white/5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={reel.thumbnail_url}
+                      src={video.thumbnail_url}
                       alt=""
                       className="w-full h-full object-cover"
                     />
@@ -170,32 +194,32 @@ export default function SearchPage() {
 
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-sm font-medium text-violet-400">
-                    @{reel.creator_handle}
+                    @{video.creator_handle}
                   </span>
-                  {reel.posted_at && (
+                  {video.posted_at && (
                     <span className="text-xs text-gray-500">
-                      {new Date(reel.posted_at).toLocaleDateString()}
+                      {new Date(video.posted_at).toLocaleDateString()}
                     </span>
                   )}
                 </div>
 
                 <p className="text-sm text-gray-300 line-clamp-2 mb-3">
-                  {reel.caption || "(no caption)"}
+                  {video.caption || "(no caption)"}
                 </p>
 
                 <div className="flex items-center gap-4 text-xs text-gray-400">
-                  <span title="Views">
-                    <span className="text-white font-medium">{formatViews(reel.views)}</span> views
+                  <span>
+                    <span className="text-white font-medium">{formatViews(video.views)}</span> views
                   </span>
-                  <span title="Likes">
-                    <span className="text-white font-medium">{formatViews(reel.likes)}</span> likes
+                  <span>
+                    <span className="text-white font-medium">{formatViews(video.likes)}</span> likes
                   </span>
-                  <span title="Comments">
-                    <span className="text-white font-medium">{formatViews(reel.comments_count)}</span> comments
+                  <span>
+                    <span className="text-white font-medium">{formatViews(video.shares)}</span> shares
                   </span>
-                  {reel.duration_seconds > 0 && (
+                  {video.duration_seconds > 0 && (
                     <span className="ml-auto text-gray-500">
-                      {reel.duration_seconds}s
+                      {video.duration_seconds}s
                     </span>
                   )}
                 </div>

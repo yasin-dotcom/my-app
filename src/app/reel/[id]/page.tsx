@@ -10,7 +10,7 @@ import {
 
 interface ReelData {
   id: number;
-  instagram_url: string;
+  instagram_url: string; // TikTok URL stored in same column
   creator_handle: string;
   caption: string;
   views: number;
@@ -196,7 +196,7 @@ export default function ReelDetailPage({
               rel="noopener noreferrer"
               className="text-sm text-gray-400 hover:text-white"
             >
-              View on Instagram &rarr;
+              View on TikTok &rarr;
             </a>
           )}
         </div>
