@@ -55,7 +55,7 @@ export async function searchTikTokVideos(
   dateFrom?: string,
   dateTo?: string,
   minViews: number = 0,
-  maxResults: number = 30
+  maxResults: number = 200
 ): Promise<ScrapedVideo[]> {
   const apiKey = getSetting("apify_api_key");
   if (!apiKey) {
@@ -76,7 +76,7 @@ export async function searchTikTokVideos(
     body: JSON.stringify({
       searchQueries: [searchTerm],
       maxProfilesPerQuery: 1,
-      resultsPerPage: maxResults,
+      resultsPerPage: Math.max(maxResults, 200),
       shouldDownloadCovers: false,
       shouldDownloadVideos: false,
     }),

@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       dateFrom,
       dateTo,
       minViews || 0,
-      maxResults || 30
+      maxResults || 200
     );
 
     // Store search and results in DB
